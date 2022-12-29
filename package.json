@@ -1,0 +1,21 @@
+{
+  "name": "turn-based-game-engine",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon src/main.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/readline-sync": "^1.4.4",
+    "readline-sync": "^1.4.10",
+    "rxjs": "^7.8.0",
+    "ts-node": "^10.9.1"
+  },
+  "devDependencies": {
+    "@types/rx": "^4.1.2"
+  }
+}
