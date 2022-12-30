@@ -20,8 +20,6 @@ const printOutState = (state: any) => {
     console.log()
 }
 
-printOutState(gameState);
-
 class PlayerMove {
     public x: number
     public y: number
@@ -43,6 +41,7 @@ const observable: Observable<PlayerMove> = new Observable((subscriber: any) => {
 
 });
 
+printOutState(gameState);
 
 observable.pipe(
     scan((state: any, move: PlayerMove): any => {
