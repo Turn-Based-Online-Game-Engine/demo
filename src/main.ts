@@ -33,7 +33,7 @@ class PlayerMove {
 }
 
 
-const observable = new Observable((subscriber: any) => {
+const observable: Observable<PlayerMove> = new Observable((subscriber: any) => {
     while (true){
         const answer = readline.question("What's your move ? ");
         let rawMove = answer.split(' ')
@@ -45,18 +45,18 @@ const observable = new Observable((subscriber: any) => {
 
 
 observable.pipe(
-    scan((data: any, value: any): any => {
-        let playerMove = (value as PlayerMove);
-        let playerId = data.turn;
-        let playerSign = data.playerSigns[playerId]
-        data.board[playerMove.x][playerMove.y] = playerSign
+    scan((state: any, move: PlayerMove): any => {
+        let playerMove = (move as PlayerMove);
+        let playerId = state.turn;
+        let playerSign = state.playerSigns[playerId]
+        state.board[playerMove.x][playerMove.y] = playerSign
         
-        let playerIndex: number = data.players.indexOf(playerId);
+        let playerIndex: number = state.players.indexOf(playerId);
         
-        let nextPlayerIndex = (playerIndex + 1) % data.players.length;
-        data.turn = data.players[nextPlayerIndex];
+        let nextPlayerIndex = (playerIndex + 1) % state.players.length;
+        state.turn = state.players[nextPlayerIndex];
         
-        return data;
+        return state;
     }, gameState)
 ).subscribe(((result: any) => {
     printOutState(result);
