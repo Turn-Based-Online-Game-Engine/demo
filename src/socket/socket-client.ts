@@ -6,9 +6,8 @@ socket.io.on("error", (error:any) => {
   console.log(error)
 });
 
-socket.on('message', (data:any) => {
-    console.log(data)
+socket.on('newRoom', (data:any) => {
+    console.log("tst",data)
 });
-  
   
 socket.emit('createRoom');

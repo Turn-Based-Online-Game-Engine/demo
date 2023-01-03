@@ -1,4 +1,5 @@
 const io = require('socket.io');
+const socketRooms: any = {};
 
 export const createSocketConnection = (server:any) => {
     
@@ -7,7 +8,13 @@ export const createSocketConnection = (server:any) => {
     let rooms = 0;
 
     socketIo.on('connection', (socket:any) => {
-    
+      
+      // const roomId = socket.handshake.headers.roomId;
+      
+      // if (!(roomId in socketRooms)){
+      //   throw new Error("Invalid roomId")
+      // }
+          
         console.log('A user has connected');
         
         socket.on('createRoom', () => {
@@ -17,9 +24,16 @@ export const createSocketConnection = (server:any) => {
         });
         
         socket.on('joinRoom', (data:any) => {
-          console.log(`Joining room ${data.room}`);
+          console.log(`Joining room ${data}`);
+          const roomId = data.room
+          const playerId:string = (socket.handshake.headers.playerId as string);
+
           socket.join(data.room);
           socket.to(data.room).emit('userJoined', { room: data.room });
+          
+          const socketRoom = socketRooms[roomId];
+          socketRoom.playerJoined(playerId, socket);
+
         });
         
         socket.on('sendMessage', (data:any) => {
@@ -36,4 +50,22 @@ export const createSocketConnection = (server:any) => {
 }
 
 
+export class SocketRoom {
 
+    private gameInfo: any;
+    private playerConnectedSubject: any;
+
+    constructor(gameInfo: any, playerConnectedSubject: any) {
+        this.gameInfo = gameInfo;
+        this.playerConnectedSubject = playerConnectedSubject;
+    }
+
+    public playerJoined(playerId: string, socket: any){
+        this.playerConnectedSubject.next({
+            playerId: playerId,
+            socket: socket,
+            roomId: this.gameInfo.roomId
+        });
+    }
+
+}

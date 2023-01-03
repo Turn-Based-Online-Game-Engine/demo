@@ -1,5 +1,5 @@
 import { bufferCount, distinct, Subject } from "rxjs";
-import { SocketRoom } from "../socket";
+import { SocketRoom } from "../socket/socket-room";
 import { WhoGotHigher } from "./main";
 
 
@@ -9,9 +9,6 @@ export const playerConnected = new Subject();
 const flowPipelines: any = {};
 const games: any = {};
 const socketRooms: any = {};
-
-
-
 
 roomCreatedSubject.subscribe((gameInfo: any)=>{
     const playerConnectedSubject = new Subject();
