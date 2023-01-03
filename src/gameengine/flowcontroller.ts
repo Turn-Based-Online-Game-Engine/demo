@@ -1,32 +1,36 @@
-import { Subject, Subscription } from "rxjs";
-import { scan } from "rxjs";
+import { bufferCount, distinct, Subject } from "rxjs";
+import { roomCreatedSubject } from "./pipelines";
+
+const flowPipelines: any = {};
+const games: any = {};
+const socketRooms: any = {};
 
 
-export abstract class GameEngine {
-    
-    subscription?: Subscription;
-    playerActionSubject?: Subject<any>;
 
-    abstract getAccoumulator(): any;
-    abstract getChangedStateHandler(): any;
-    abstract getInitialGameState(): any;
+roomCreatedSubject.subscribe((gameInfo: any)=>{
+    const playerConnectedSubject = new Subject();
+    const playersCount = gameInfo.playersCount;
+    const roomId = gameInfo.roomId;
 
-    startEngine(): Subject<any> {
-        const playerState = this.getInitialGameState();
-        const accoumulator = this.getAccoumulator();
-        const changedStateHandler = this.getChangedStateHandler();
+    const subscription = playerConnectedSubject.pipe(
+        distinct((connectionInfo:any) => connectionInfo.roomId),
+        bufferCount(playersCount)
+    ).subscribe((playersConnectionInfo ) => {
+       const game = startGame(playersConnectionInfo); 
+       games[roomId] = game; 
+       subscription.unsubscribe();
+    });
+    const socketRoom = createSocketRoom(gameInfo, playerConnectedSubject)
+    socketRooms[roomId] = socketRoom;
+    flowPipelines[roomId] = playerConnectedSubject;
+})
 
-        this.playerActionSubject = new Subject();
-        
-        this.subscription = this.playerActionSubject!.pipe(
-            scan(accoumulator, playerState)
-        ).subscribe(changedStateHandler);
-        
-        return this.playerActionSubject;
-    }
 
-    stop(){
-        this.subscription!.unsubscribe();
-    }
-
+function startGame(playersConnectionInfo: any[]) {
+    throw new Error("Function not implemented.");
 }
+
+const createSocketRoom = (gameInfo: any, x:any) => {
+    throw new Error("Function not implemented.");
+}
+
