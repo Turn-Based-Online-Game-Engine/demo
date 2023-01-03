@@ -16,7 +16,8 @@ export const getRoom = (req: Request, res: Response) => {
 export const postRooms = (req: Request, res: Response) => {
     const newRoom =  {
         roomId: rooms.length + 1,
-        roomKey: uuidv4()
+        roomKey: uuidv4(),
+        playersCount: req.body.playersCount
     };
     rooms.push(newRoom);
     res.json(newRoom)
