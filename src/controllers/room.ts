@@ -1,24 +1,21 @@
 import { Request, Response } from "express"
-import { v4 as uuidv4 } from 'uuid';
+import * as roomService from '../services/room';
 
-const rooms: any = [];
 
 export const getRooms = (req: Request, res: Response) => {
+    const rooms = roomService.getRooms()
     res.json(rooms)
 }
 
 export const getRoom = (req: Request, res: Response) => {
-    const roomId = req.params.roomId;
-    res.json(rooms[roomId]);
+    const roomId: number = (req.params.roomId as unknown as number);
+    const room = roomService.getRoom(roomId);
+    res.json(room);
 }
 
-
 export const postRooms = (req: Request, res: Response) => {
-    const newRoom =  {
-        roomId: rooms.length + 1,
-        roomKey: uuidv4(),
-        playersCount: req.body.playersCount
-    };
-    rooms.push(newRoom);
+    console.log(req.body);
+    const playersCount: number = req.body.playersCount;
+    const newRoom = roomService.postRooms({playersCount: playersCount});
     res.json(newRoom)
 }

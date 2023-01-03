@@ -1,54 +1,38 @@
-const http = require('http');
-import { Server } from "socket.io";
+import { io } from "./index";
 
 
-export class LiveCommunicator {
+const socketRooms: any = {};
 
-    app: any;
-    httpServer: any;
-    io: any;
+io.use((socket: any, next: any)=>{
+    const roomId = socket.handshake.headers.roomId;
+    if (!(roomId in socketRooms))
+        next(new Error("Invalid roomId"))
+    next();
+});
 
-    constructor(app: any){
-        this.app = app;
-        this.httpServer = http.createServer(this.app);
-        this.io = new Server(this.httpServer);
+io.on("connection", (socket) => {
+    const roomId:string = (socket.handshake.headers.roomId as string);
+    const playerId:string = (socket.handshake.headers.playerId as string);
+    const socketRoom = socketRooms[roomId];
+    socketRoom.playerJoined(playerId, socket);
+});
 
-        // Middlewares
+export class SocketRoom {
 
-        // Auth
-        this.io.use((_socket: any, next: any)=> {
-            // TODO auth with socket.handshake.headers.auth
-            console.log("Authentication passed");
-            next();
-        });
+    private gameInfo: any;
+    private playerConnectedSubject: any;
 
-        // Validation
-        this.io.use((socket: any, next: any)=> {
-            console.log("Validating user");
-            if (socket.handshake.headers.user)
-                next();
-            else
-                next(new Error("Invalid user"))
-        });
-
-        this.io.on("connection", (socket: any) => {
-            console.log('a user connected');
-            
-            socket.on('disconnect', () => {
-                console.log('user disconnected');
-            });
-
-            socket.on('chat message', (msg: string) => {
-                console.log('message: ' + msg);
-                socket.emit("helo");
-            });
-        });
-
-        this.httpServer.listen(3000, () => {
-            console.log('listening on *:3000');
-        });
-
+    constructor(gameInfo: any, playerConnectedSubject: any) {
+        this.gameInfo = gameInfo;
+        this.playerConnectedSubject = playerConnectedSubject;
     }
-    
-}
 
+    public playerJoined(playerId: string, socket: any){
+        this.playerConnectedSubject.next({
+            playerId: playerId,
+            socket: socket,
+            roomId: this.gameInfo.roomId
+        });
+    }
+
+}
