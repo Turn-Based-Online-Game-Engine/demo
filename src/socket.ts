@@ -1,6 +1,24 @@
 const http = require('http');
-import { Server } from "socket.io";
+import { bufferCount, Subject } from "rxjs";
+import { Server, Socket } from "socket.io";
 
+
+const playerJoinedSubject = new Subject<PlayerJoinedInfo>();
+const playerDisconectedSubject = new Subject<PlayerJoinedInfo>();
+
+
+class PlayerJoinedInfo {
+
+    public playerId: string;
+    public socket: Socket;
+    public roomId: number;
+
+    constructor(playerId: string, socket: Socket, roomId: number) {
+        this.playerId = playerId;
+        this.socket = socket;
+        this.roomId = roomId;
+    }
+}
 
 export class LiveCommunicator {
 
@@ -34,13 +52,15 @@ export class LiveCommunicator {
         this.io.on("connection", (socket: any) => {
             console.log('a user connected');
             
+            const playerId: string = socket.handshake.headers.user;
+            const roomId: number = socket.handshake.headers.roomId;
+            const playerJoinedInfo: PlayerJoinedInfo = new PlayerJoinedInfo(playerId, socket, roomId);
+            
+            playerJoinedSubject.next(playerJoinedInfo);
+            
             socket.on('disconnect', () => {
+                playerDisconectedSubject.next(playerJoinedInfo);
                 console.log('user disconnected');
-            });
-
-            socket.on('chat message', (msg: string) => {
-                console.log('message: ' + msg);
-                socket.emit("helo");
             });
         });
 
