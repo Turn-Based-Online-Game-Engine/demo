@@ -5,7 +5,7 @@ import { scan } from "rxjs";
 export abstract class GameEngine {
     
     subscription?: Subscription;
-    playerActionSubject?: Subject<any>;
+    protected playerActionSubject?: Subject<any>;
 
     abstract getAccoumulator(): any;
     abstract getChangedStateHandler(): any;

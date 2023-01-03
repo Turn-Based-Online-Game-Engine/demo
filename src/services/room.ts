@@ -1,4 +1,4 @@
-import { roomCreatedSubject } from '../gameengine/pipelines';
+import { roomCreatedSubject } from '../gameengine/flowcontroller';
 import * as roomRepository from '../repositories/room'
 
 
@@ -12,7 +12,7 @@ const getRoom = (roomId: number) => {
 
 const postRooms = (roomInfo: any) => {
     const newRoom = roomRepository.saveRoom(roomInfo);
-    roomCreatedSubject.next(roomInfo);    
+    roomCreatedSubject.next(roomInfo);
     return newRoom;
 }
 

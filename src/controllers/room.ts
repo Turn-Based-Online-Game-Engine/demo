@@ -14,6 +14,7 @@ export const getRoom = (req: Request, res: Response) => {
 }
 
 export const postRooms = (req: Request, res: Response) => {
+    console.log(req.body);
     const playersCount: number = req.body.playersCount;
     const newRoom = roomService.postRooms({playersCount: playersCount});
     res.json(newRoom)

@@ -2,7 +2,14 @@ import { GameEngine } from "./gameengine";
 
 
 
-class WhoGotHigher extends GameEngine {
+export class WhoGotHigher extends GameEngine {
+    private playersConnectionInfo: any[];
+
+    constructor(playersConnectionInfo: any[]){
+        super();
+        this.playersConnectionInfo = playersConnectionInfo;
+        console.log("Starting the game WhoGotHigher!!!", this.playersConnectionInfo);
+    }
     
     getAccoumulator() {
         return (state: any, playerAction: any): any => {
@@ -44,13 +51,3 @@ class WhoGotHigher extends GameEngine {
     }
     
 }
-
-const game = new WhoGotHigher();
-const playerActionSubject = game.startEngine();
-
-
-setTimeout(() => {playerActionSubject.next(10);}, 1000)
-setTimeout(() => {playerActionSubject.next(20);}, 1000)
-setTimeout(() => {playerActionSubject.next(30);}, 1000)
-setTimeout(() => {playerActionSubject.next(20);}, 1000)
-

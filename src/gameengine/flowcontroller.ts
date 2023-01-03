@@ -1,9 +1,15 @@
 import { bufferCount, distinct, Subject } from "rxjs";
-import { roomCreatedSubject } from "./pipelines";
+import { SocketRoom } from "../socket";
+import { WhoGotHigher } from "./main";
+
+
+export const roomCreatedSubject = new Subject();
+export const playerConnected = new Subject();
 
 const flowPipelines: any = {};
 const games: any = {};
 const socketRooms: any = {};
+
 
 
 
@@ -13,7 +19,6 @@ roomCreatedSubject.subscribe((gameInfo: any)=>{
     const roomId = gameInfo.roomId;
 
     const subscription = playerConnectedSubject.pipe(
-        distinct((connectionInfo:any) => connectionInfo.roomId),
         bufferCount(playersCount)
     ).subscribe((playersConnectionInfo ) => {
        const game = startGame(playersConnectionInfo); 
@@ -27,10 +32,12 @@ roomCreatedSubject.subscribe((gameInfo: any)=>{
 
 
 function startGame(playersConnectionInfo: any[]) {
-    throw new Error("Function not implemented.");
+    const game = new WhoGotHigher(playersConnectionInfo)
+    return game;
 }
 
-const createSocketRoom = (gameInfo: any, x:any) => {
-    throw new Error("Function not implemented.");
+const createSocketRoom = (gameInfo: any, playerConnectedSubject:any) => {
+    const socketRoom = new SocketRoom(gameInfo, playerConnectedSubject);
+    return socketRoom;
 }
 
