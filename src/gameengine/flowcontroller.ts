@@ -1,40 +1,36 @@
-import { bufferCount, distinct, Subject } from "rxjs";
-import { SocketRoom } from "../socket/socket-room";
+import { table } from "console";
+import { bufferCount, take, tap } from "rxjs";
+import { PlayerConnectionInfo, SocketRoom } from "../socket/socket-room";
 import { WhoGotHigher } from "./main";
+import { playerConnectedSubject, roomCreatedSubject } from "./pipelines";
 
 
-export const roomCreatedSubject = new Subject();
-export const playerConnected = new Subject();
-
-const flowPipelines: any = {};
 const games: any = {};
 const socketRooms: any = {};
 
-roomCreatedSubject.subscribe((gameInfo: any)=>{
-    const playerConnectedSubject = new Subject();
-    const playersCount = gameInfo.playersCount;
-    const roomId = gameInfo.roomId;
-
-    const subscription = playerConnectedSubject.pipe(
-        bufferCount(playersCount)
-    ).subscribe((playersConnectionInfo ) => {
-       const game = startGame(playersConnectionInfo); 
-       games[roomId] = game; 
-       subscription.unsubscribe();
-    });
-    const socketRoom = createSocketRoom(gameInfo, playerConnectedSubject)
-    socketRooms[roomId] = socketRoom;
-    flowPipelines[roomId] = playerConnectedSubject;
+playerConnectedSubject.subscribe((playerConnectionInfo: PlayerConnectionInfo) => {
+    const socketRoom = socketRooms[playerConnectionInfo.roomId];
+    socketRoom.playerJoined(playerConnectionInfo);
 })
 
+roomCreatedSubject.subscribe((gameInfo: any) => {
+    const roomId = gameInfo.roomId;
+    const socketRoom = new SocketRoom(gameInfo);
+    socketRooms[roomId] = socketRoom;
+    const playersCount = gameInfo.playersCount;
 
-function startGame(playersConnectionInfo: any[]) {
-    const game = new WhoGotHigher(playersConnectionInfo)
-    return game;
-}
+    socketRoom.playerJoinedSubject.pipe(
+        bufferCount(playersCount),
+        take(1) // <3
+    ).subscribe((playerConnectionsInfo: any) => {
+        socketRoom.allPlayersJoinedSubject.next(playerConnectionsInfo);
+    });
 
-const createSocketRoom = (gameInfo: any, playerConnectedSubject:any) => {
-    const socketRoom = new SocketRoom(gameInfo, playerConnectedSubject);
-    return socketRoom;
-}
+    socketRoom.allPlayersJoinedSubject.subscribe((playersConnectionInfo: any)=>{
+        const game = new WhoGotHigher(playersConnectionInfo).startEngine();
+        games[roomId] = game;
+    })
+    
+});
 
+export const initializePipelines = undefined;

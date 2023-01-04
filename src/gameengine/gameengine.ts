@@ -11,7 +11,7 @@ export abstract class GameEngine {
     abstract getChangedStateHandler(): any;
     abstract getInitialGameState(): any;
 
-    startEngine(): Subject<any> {
+    startEngine(): GameEngine {
         const playerState = this.getInitialGameState();
         const accoumulator = this.getAccoumulator();
         const changedStateHandler = this.getChangedStateHandler();
@@ -22,7 +22,7 @@ export abstract class GameEngine {
             scan(accoumulator, playerState)
         ).subscribe(changedStateHandler);
         
-        return this.playerActionSubject;
+        return this;
     }
 
     stop(){

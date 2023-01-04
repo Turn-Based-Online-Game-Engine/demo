@@ -1,67 +1,70 @@
+import { Server } from "http";
+import { Subject } from "rxjs";
+import { playerConnectedSubject } from "../gameengine/pipelines";
 const io = require('socket.io');
 const socketRooms: any = {};
 
-export const createSocketConnection = (server:any) => {
-    
-    const socketIo = io(server);
-    
-    let rooms = 0;
 
-    socketIo.on('connection', (socket:any) => {
-      
-      // const roomId = socket.handshake.headers.roomId;
-      
-      // if (!(roomId in socketRooms)){
-      //   throw new Error("Invalid roomId")
-      // }
-          
-        console.log('A user has connected');
-        
-        socket.on('createRoom', () => {
-          console.log('Creating a new room');
-          socket.join(`room-${++rooms}`);
-          socket.emit('newRoom', { room: `room-${rooms}` });
-        });
-        
-        socket.on('joinRoom', (data:any) => {
-          console.log(`Joining room ${data}`);
-          const roomId = data.room
-          const playerId:string = (socket.handshake.headers.playerId as string);
+export class WebSocket {
 
-          socket.join(data.room);
-          socket.to(data.room).emit('userJoined', { room: data.room });
-          
-          const socketRoom = socketRooms[roomId];
-          socketRoom.playerJoined(playerId, socket);
+    private static io: any;
 
-        });
-        
-        socket.on('sendMessage', (data:any) => {
-          console.log(`Sending message to room ${data.room}: ${data.message}`);
-          socket.to(data.room).emit('message', { username: data.username, message: data.message });
-        });
-        
-        socket.on('disconnect', () => {
-          console.log('A user has disconnected');
-        });
-    
-    });
+    // Singletone
+    public static getInstance(httpServer: any): WebSocket {
+        if (!WebSocket.io) {
+            WebSocket.io = io(httpServer);
+        }
+        return WebSocket.io;
+    }
 
 }
 
 
+export class PlayerConnectionInfo {
+    
+    public socket: any;
+    public roomId: string;
+    public playerId: string;
+
+    constructor(socket: any, roomId: string, playerId: string){
+        this.socket = socket;
+        this.roomId = roomId;
+        this.playerId = playerId;
+    }
+}
+
+export class PlayerConnectionListener {
+
+    private io: any;
+
+    constructor(io: any){
+        this.io = io;
+        this.io.on('connection', (socket: any) => {
+            const playerId = socket.handshake.headers.playerid;
+            const roomId = socket.handshake.headers.roomid;
+            const playerConnectionInfo = new PlayerConnectionInfo(socket, roomId, playerId);
+            console.log("Player connected", playerConnectionInfo.roomId, playerConnectionInfo.playerId);
+            playerConnectedSubject.next(playerConnectionInfo);
+        })
+    }
+
+}
+
 export class SocketRoom {
 
     private gameInfo: any;
-    private playerConnectedSubject: any;
+    public playerJoinedSubject: any;
+    public allPlayersJoinedSubject: any;
 
-    constructor(gameInfo: any, playerConnectedSubject: any) {
+    constructor(gameInfo: any) {
+        console.log("Creating socket room");
         this.gameInfo = gameInfo;
-        this.playerConnectedSubject = playerConnectedSubject;
+        this.playerJoinedSubject = new Subject();
+        this.allPlayersJoinedSubject = new Subject();
     }
 
-    public playerJoined(playerId: string, socket: any){
-        this.playerConnectedSubject.next({
+    public playerJoined(playerId: string, socket: any){  
+        this.playerJoinedSubject.next({
             playerId: playerId,
             socket: socket,
             roomId: this.gameInfo.roomId
