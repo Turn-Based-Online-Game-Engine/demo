@@ -1,36 +1,40 @@
-import { table } from "console";
-import { bufferCount, take, tap } from "rxjs";
+import { bufferCount, take } from "rxjs";
 import { PlayerConnectionInfo, SocketRoom } from "../socket/socket-room";
 import { WhoGotHigher } from "./main";
 import { playerConnectedSubject, roomCreatedSubject } from "./pipelines";
 
 
-const games: any = {};
-const socketRooms: any = {};
+export class FlowController {
 
-playerConnectedSubject.subscribe((playerConnectionInfo: PlayerConnectionInfo) => {
-    const socketRoom = socketRooms[playerConnectionInfo.roomId];
-    socketRoom.playerJoined(playerConnectionInfo);
-})
+    private games: any = {};
+    private socketRooms: any = {};
 
-roomCreatedSubject.subscribe((gameInfo: any) => {
-    const roomId = gameInfo.roomId;
-    const socketRoom = new SocketRoom(gameInfo);
-    socketRooms[roomId] = socketRoom;
-    const playersCount = gameInfo.playersCount;
+    constructor(){
+        playerConnectedSubject.subscribe((playerConnectionInfo: PlayerConnectionInfo) => {
+            const socketRoom = this.socketRooms[playerConnectionInfo.roomId];
+            socketRoom.playerJoined(playerConnectionInfo);
+        })
 
-    socketRoom.playerJoinedSubject.pipe(
-        bufferCount(playersCount),
-        take(1) // <3
-    ).subscribe((playerConnectionsInfo: any) => {
-        socketRoom.allPlayersJoinedSubject.next(playerConnectionsInfo);
-    });
+        roomCreatedSubject.subscribe((gameInfo: any) => {
+            const roomId = gameInfo.roomId;
+            const socketRoom = new SocketRoom(gameInfo);
+            this.socketRooms[roomId] = socketRoom;
+            const playersCount = gameInfo.playersCount;
 
-    socketRoom.allPlayersJoinedSubject.subscribe((playersConnectionInfo: any)=>{
-        const game = new WhoGotHigher(playersConnectionInfo).startEngine();
-        games[roomId] = game;
-    })
-    
-});
+            socketRoom.playerJoinedSubject.pipe(
+                bufferCount(playersCount),
+                take(1) // <3
+            ).subscribe((playerConnectionsInfo: any) => {
+                socketRoom.allPlayersJoinedSubject.next(playerConnectionsInfo);
+            });
 
-export const initializePipelines = undefined;
+            socketRoom.allPlayersJoinedSubject.subscribe((playersConnectionInfo: any)=>{
+                const game = new WhoGotHigher(playersConnectionInfo).startEngine();
+                this.games[roomId] = game;
+            })
+            
+        });
+    }
+
+
+}

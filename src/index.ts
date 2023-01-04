@@ -1,6 +1,6 @@
 import { Application } from "express";
 import { Server } from "http";
-import { initializePipelines } from "./gameengine/flowcontroller";
+import { FlowController } from "./gameengine/flowcontroller";
 import { roomRouter } from "./routes/room";
 import { PlayerConnectionListener, WebSocket } from "./socket/socket-room";
 
@@ -18,4 +18,4 @@ export const server: Server = app.listen(3000, () => {
 
 export const io = WebSocket.getInstance(server);
 const playerConnectionListener = new PlayerConnectionListener(io);
-console.log(initializePipelines);
+const flowController = new FlowController();
