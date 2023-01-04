@@ -40,10 +40,12 @@ export class PlayerConnectionListener {
     constructor(io: any){
         this.io = io;
         this.io.on('connection', (socket: any) => {
-            const playerId = socket.handshake.headers.playerid;
             const roomId = socket.handshake.headers.roomid;
+            const playerId = socket.handshake.headers.playerid;
+            
             const playerConnectionInfo = new PlayerConnectionInfo(socket, roomId, playerId);
             console.log("Player connected", playerConnectionInfo.roomId, playerConnectionInfo.playerId);
+            
             playerConnectedSubject.next(playerConnectionInfo);
         })
     }
@@ -63,12 +65,8 @@ export class SocketRoom {
         this.allPlayersJoinedSubject = new Subject();
     }
 
-    public playerJoined(playerId: string, socket: any){  
-        this.playerJoinedSubject.next({
-            playerId: playerId,
-            socket: socket,
-            roomId: this.gameInfo.roomId
-        });
+    public playerJoined(playerConnectionInfo: PlayerConnectionInfo){  
+        this.playerJoinedSubject.next(playerConnectionInfo);
     }
 
 }
