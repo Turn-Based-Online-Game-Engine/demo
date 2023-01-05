@@ -1,56 +1,5 @@
-import { Server } from "http";
-import { Subject } from "rxjs";
-import { playerConnectedSubject } from "../gameengine/pipelines";
-const io = require('socket.io');
-const socketRooms: any = {};
-
-
-export class WebSocket {
-
-    private static io: any;
-
-    // Singletone
-    public static getInstance(httpServer: any): WebSocket {
-        if (!WebSocket.io) {
-            WebSocket.io = io(httpServer);
-        }
-        return WebSocket.io;
-    }
-
-}
-
-
-export class PlayerConnectionInfo {
-    
-    public socket: any;
-    public roomId: string;
-    public playerId: string;
-
-    constructor(socket: any, roomId: string, playerId: string){
-        this.socket = socket;
-        this.roomId = roomId;
-        this.playerId = playerId;
-    }
-}
-
-export class PlayerConnectionListener {
-
-    private io: any;
-
-    constructor(io: any){
-        this.io = io;
-        this.io.on('connection', (socket: any) => {
-            const roomId = socket.handshake.headers.roomid;
-            const playerId = socket.handshake.headers.playerid;
-            
-            const playerConnectionInfo = new PlayerConnectionInfo(socket, roomId, playerId);
-            console.log("Player connected", playerConnectionInfo.roomId, playerConnectionInfo.playerId);
-            
-            playerConnectedSubject.next(playerConnectionInfo);
-        })
-    }
-
-}
+import {Subject} from "rxjs";
+import {PlayerConnectionInfo} from "../types/player-connection-info";
 
 export class SocketRoom {
 
@@ -65,7 +14,7 @@ export class SocketRoom {
         this.allPlayersJoinedSubject = new Subject();
     }
 
-    public playerJoined(playerConnectionInfo: PlayerConnectionInfo){  
+    public playerJoined(playerConnectionInfo: PlayerConnectionInfo) {
         this.playerJoinedSubject.next(playerConnectionInfo);
     }
 
