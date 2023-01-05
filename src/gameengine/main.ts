@@ -1,13 +1,13 @@
+import { SocketRoom } from "../socket/socket-room";
 import { GameEngine } from "./gameengine";
 
 
 
 export class WhoGotHigher extends GameEngine {
-    private playersConnectionInfo: any[];
+    
 
-    constructor(playersConnectionInfo: any[]){
-        super();
-        this.playersConnectionInfo = playersConnectionInfo;
+    constructor(playersConnectionInfo: any[], socketRoom: SocketRoom){
+        super(playersConnectionInfo, socketRoom);
         console.log("Starting the game WhoGotHigher!!!", this.playersConnectionInfo);
     }
     

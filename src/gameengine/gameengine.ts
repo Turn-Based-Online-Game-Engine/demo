@@ -1,15 +1,23 @@
 import { Subject, Subscription } from "rxjs";
 import { scan } from "rxjs";
+import { SocketRoom } from "../socket/socket-room";
 
 
 export abstract class GameEngine {
     
-    subscription?: Subscription;
+    private subscription?: Subscription;
     protected playerActionSubject?: Subject<any>;
+    protected playersConnectionInfo: any[];
+    protected socketRoom: SocketRoom;
 
     abstract getAccoumulator(): any;
     abstract getChangedStateHandler(): any;
     abstract getInitialGameState(): any;
+
+    constructor(playersConnectionInfo: any[], socketRoom: SocketRoom){
+        this.playersConnectionInfo = playersConnectionInfo;
+        this.socketRoom = socketRoom;
+    }
 
     startEngine(): GameEngine {
         const playerState = this.getInitialGameState();

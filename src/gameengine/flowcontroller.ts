@@ -29,7 +29,7 @@ export class FlowController {
             });
 
             socketRoom.allPlayersJoinedSubject.subscribe((playersConnectionInfo: any)=>{
-                const game = new WhoGotHigher(playersConnectionInfo).startEngine();
+                const game = new WhoGotHigher(playersConnectionInfo, socketRoom).startEngine();
                 this.games[roomId] = game;
             })
             
