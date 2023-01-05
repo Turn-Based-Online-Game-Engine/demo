@@ -22,13 +22,6 @@ export class WhoGotHigher extends GameEngine {
 
     constructor(playersConnectionInfo: any[], socketRoom: SocketRoom){
         super(playersConnectionInfo, socketRoom);
-        playersConnectionInfo.forEach((playerConnectionInfo: PlayerConnectionInfo) => {
-            const playerSocket = playerConnectionInfo.socket;
-            playerSocket.on("move", (playerMove: PlayerMove) => {
-                playerMove.playerId = playerSocket.playerId;
-                this.playerActionSubject?.next(playerMove);
-            })
-        })
     }
     
     getAccoumulator() {
@@ -52,8 +45,12 @@ export class WhoGotHigher extends GameEngine {
         }
     }
 
-    getChangedStateHandler() {
-        return console.log
+    getStateChangedPlayerCallbackFilter(): (state: any, playerId: number) => object {
+        return (state: any, playerId: number) => {
+            console.log("For palyer", playerId);
+            return state
+        }
+        
     }
 
     getInitialGameState() {

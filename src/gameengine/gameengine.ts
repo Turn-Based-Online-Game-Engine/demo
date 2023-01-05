@@ -1,6 +1,7 @@
-import { Subject, Subscription } from "rxjs";
+import { map, Subject, Subscription } from "rxjs";
 import { scan } from "rxjs";
 import { SocketRoom } from "../socket/socket-room";
+import { PlayerConnectionInfo } from "../types/player-connection-info";
 
 export abstract class GameEngine {
     
@@ -10,24 +11,36 @@ export abstract class GameEngine {
     protected socketRoom: SocketRoom;
 
     abstract getAccoumulator(): any;
-    abstract getChangedStateHandler(): any;
+    abstract getStateChangedPlayerCallbackFilter(): (state: any, playerId: number) => object;
     abstract getInitialGameState(): any;
 
     constructor(playersConnectionInfo: any[], socketRoom: SocketRoom){
         this.playersConnectionInfo = playersConnectionInfo;
         this.socketRoom = socketRoom;
+        playersConnectionInfo.forEach((playerConnectionInfo: PlayerConnectionInfo) => {
+            const playerSocket = playerConnectionInfo.socket;
+            playerSocket.on("move", (playerMove: any) => {
+                playerMove.playerId = playerSocket.playerId;
+                this.playerActionSubject?.next(playerMove);
+            })
+        })
     }
 
     startEngine(): GameEngine {
         const playerState = this.getInitialGameState();
         const accoumulator = this.getAccoumulator();
-        const changedStateHandler = this.getChangedStateHandler();
+        const changedStateHandler = this.getStateChangedPlayerCallbackFilter();
 
         this.playerActionSubject = new Subject();
         
         this.subscription = this.playerActionSubject!.pipe(
             scan(accoumulator, playerState)
-        ).subscribe(changedStateHandler);
+        ).subscribe((state: any) => {
+            this.playersConnectionInfo.forEach((pci => {
+                const result = changedStateHandler(state, pci.playerId);
+                pci.socket.emit("statechange", result);
+            }))
+        });
         
         return this;
     }
