@@ -1,5 +1,6 @@
 import {PlayerConnectionInfo} from "../types/player-connection-info";
 import {playerConnectedSubject} from "../gameengine/pipelines";
+import { authenticatePlayer } from "./auth";
 
 export class PlayerConnectionListener {
 
@@ -7,6 +8,7 @@ export class PlayerConnectionListener {
 
     constructor(io: any) {
         this.io = io;
+        this.io.use(authenticatePlayer)
         this.io.on('connection', (socket: any) => {
             const roomId = socket.handshake.headers.roomid;
             const playerId = socket.handshake.headers.playerid;
