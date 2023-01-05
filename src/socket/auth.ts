@@ -6,7 +6,7 @@ export const authenticatePlayer =  (socket: any, next: any) => {
         const roomId = socket.handshake.headers.roomid;
         const room = getRoom(roomId);
         socket.room = room;
-        socket.player = playerId;
+        socket.playerId = playerId;
         next();
     } catch(e){
         next(new Error("Authentication failed"));

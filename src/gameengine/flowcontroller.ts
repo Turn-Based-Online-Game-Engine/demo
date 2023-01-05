@@ -31,7 +31,7 @@ export class FlowController {
 
             socketRoom.allPlayersJoinedSubject.subscribe((playersConnectionInfo: any) => {
                 const game = new WhoGotHigher(playersConnectionInfo, socketRoom).startEngine();
-                console.log("Game started", game);
+                console.log("Game started");
                 this.games[roomId] = game;
             })
 

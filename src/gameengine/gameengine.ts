@@ -2,7 +2,6 @@ import { Subject, Subscription } from "rxjs";
 import { scan } from "rxjs";
 import { SocketRoom } from "../socket/socket-room";
 
-
 export abstract class GameEngine {
     
     private subscription?: Subscription;
